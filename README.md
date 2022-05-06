@@ -65,7 +65,7 @@ Please note, golang version must in ffmpeg image must match to `GOLANG_VERSION` 
 
 OpenJDK image:
 ```shell
-docker build -t denismakogon/ffmpeg-debian:5.0.1-openjdk-ga -f openjdk/Dockerfile \
+docker build -t denismakogon/ffmpeg-debian:5.0.1-openjdk-18 -f openjdk/Dockerfile \
   --build-arg "FFMPEG_VERSION=5.0.1" \
   --build-arg "JDK_PKG_URL=https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz" .
 ```

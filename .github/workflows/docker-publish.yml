@@ -125,8 +125,6 @@ jobs:
           context: ./runtime
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-runtime
-          build-args:
-            - FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
 
       - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
         id: golang-image
@@ -135,9 +133,6 @@ jobs:
           context: ./golang
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
-          build-args:
-            - FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
-            - GOLANG_VERSION=${{ env.GOLANG_VERSION }}
 
       - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version> image building stage"
         id: openjdk-image
@@ -146,9 +141,6 @@ jobs:
           context: ./openjdk
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
-          build-args:
-            - FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
-            - JDK_PKG_URL=${{ env.JDK_PKG_URL }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
@@ -167,30 +159,22 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
         run: cosign sign ${{ steps.build-meta.outputs.tags }}@${{ steps.build-image.outputs.digest }}
 
       - name: Sign the published runtime image
         if: ${{ github.event_name != 'pull_request' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
         run: cosign sign ${{ steps.runtime-meta.outputs.tags }}@${{ steps.runtime-image.outputs.digest }}
 
       - name: Sign the published golang image
         if: ${{ github.event_name != 'pull_request' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
         run: cosign sign ${{ steps.golang-meta.outputs.tags }}@${{ steps.golang-image.outputs.digest }}
 
       - name: Sign the published openjdk image
         if: ${{ github.event_name != 'pull_request' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
         run: cosign sign ${{ steps.openjdk-meta.outputs.tags }}@${{ steps.openjdk-image.outputs.digest }}

@@ -1,4 +1,6 @@
-FROM denismakogon/ffmpeg-debian:build-stage as build-stage
+ARG FFMPEG_VERSION=5.0.1
+
+FROM denismakogon/ffmpeg-debian:${FFMPEG_VERSION}-build as build-stage
 
 FROM denismakogon/ffmpeg-debian:base
 

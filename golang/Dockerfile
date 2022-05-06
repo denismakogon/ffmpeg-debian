@@ -1,13 +1,13 @@
-FROM denismakogon/ffmpeg-debian:build-stage as build-stage
+ARG FFMPEG_VERSION=5.0.1
+ARG GOLANG_VERSION=1
 
-FROM golang:1.10.3-stretch
+FROM denismakogon/ffmpeg-debian:${FFMPEG_VERSION}-build as build-stage
 
-COPY --from=build-stage /usr/local /usr/local/
-COPY --from=build-stage /opt/ffmpeg/lib/pkgconfig /usr/local/lib/pkgconfig
+FROM golang:${GOLANG_VERSION}-bullseye
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    libva-drm1 \
-    libva1 \
+    libva-drm2 \
+    libva2 \
     build-essential \
     g++ \
     gcc \
@@ -17,6 +17,9 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libavdevice-dev \
     && \
 	rm -rf /var/lib/apt/lists/*
+
+COPY --from=build-stage /usr/local /usr/local/
+COPY --from=build-stage /opt/ffmpeg/lib/pkgconfig /usr/local/lib/pkgconfig
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig

@@ -125,6 +125,8 @@ jobs:
           context: ./runtime
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-runtime
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
 
       - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
         id: golang-image
@@ -133,6 +135,9 @@ jobs:
           context: ./golang
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
 
       - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version> image building stage"
         id: openjdk-image
@@ -141,6 +146,10 @@ jobs:
           context: ./openjdk
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            JDK_PKG_URL=${{ env.JDK_PKG_URL }}
+            JDK_VERSION=${{ env.JDK_VERSION }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker

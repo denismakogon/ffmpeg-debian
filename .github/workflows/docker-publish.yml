@@ -28,8 +28,9 @@ env:
 
 
 jobs:
-  build:
 
+  build:
+    environment: ghcr.io
     runs-on: ubuntu-latest
     permissions:
       contents: read

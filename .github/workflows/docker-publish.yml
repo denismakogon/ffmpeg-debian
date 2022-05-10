@@ -16,9 +16,7 @@ on:
     branches: [ master ]
 
 env:
-  # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
   FFMPEG_VERSION: "5.0.1"
   BASE_IMAGE: "base"
   BUILD_IMAGE: "build"
@@ -33,11 +31,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     permissions:
       contents: read
       packages: write
@@ -56,9 +49,6 @@ jobs:
         uses: sigstore/cosign-installer@d6a3abf1bdea83574e28d40543793018b6035605
         with:
           cosign-release: 'v1.7.1'
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
 
       # Workaround: https://github.com/docker/build-push-action/issues/461
       - name: Setup Docker buildx
@@ -112,25 +102,25 @@ jobs:
         with:
           context: ./base
           push: ${{ github.event_name != 'pull_request' }}
-          tags: localhost:5000/${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
 
-      - name: "ffmpeg-debian:<ffmpeg-version>-build image building stage"
-        id: build-image
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-        with:
-          context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: localhost:5000/${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build
-
-      - name: "ffmpeg-debian:<ffmpeg-version>-runtime image building stage"
-        id: runtime-image
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-        with:
-          context: ./runtime
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: localhost:5000/${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-runtime
-          build-args: |
-            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+#      - name: "ffmpeg-debian:<ffmpeg-version>-build image building stage"
+#        id: build-image
+#        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+#        with:
+#          context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
+#          push: ${{ github.event_name != 'pull_request' }}
+#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build
+#
+#      - name: "ffmpeg-debian:<ffmpeg-version>-runtime image building stage"
+#        id: runtime-image
+#        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+#        with:
+#          context: ./runtime
+#          push: ${{ github.event_name != 'pull_request' }}
+#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-runtime
+#          build-args: |
+#            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
 #
 #      - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
 #        id: golang-image
@@ -154,25 +144,25 @@ jobs:
 #            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
 #            JDK_PKG_URL=${{ env.JDK_PKG_URL }}
 #            JDK_VERSION=${{ env.JDK_VERSION }}
-#
-#      # Sign the resulting Docker image digest except on PRs.
-#      # This will only write to the public Rekor transparency log when the Docker
-#      # repository is public to avoid leaking data.  If you would like to publish
-#      # transparency data even for private images, pass --force to cosign below.
-#      # https://github.com/sigstore/cosign
-#      - name: Sign the published base image
-#        if: ${{ github.event_name != 'pull_request' }}
-#        env:
-#          COSIGN_EXPERIMENTAL: "true"
-#        # This step uses the identity token to provision an ephemeral certificate
-#        # against the sigstore community Fulcio instance.
-#        run: cosign sign ${{ steps.base-meta.outputs.tags }}@${{ steps.base-image.outputs.digest }}
-#
-#      - name: Sign the published build image
-#        if: ${{ github.event_name != 'pull_request' }}
-#        env:
-#          COSIGN_EXPERIMENTAL: "true"
-#        run: cosign sign ${{ steps.build-meta.outputs.tags }}@${{ steps.build-image.outputs.digest }}
+
+      # Sign the resulting Docker image digest except on PRs.
+      # This will only write to the public Rekor transparency log when the Docker
+      # repository is public to avoid leaking data.  If you would like to publish
+      # transparency data even for private images, pass --force to cosign below.
+      # https://github.com/sigstore/cosign
+      - name: Sign the published base image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        # This step uses the identity token to provision an ephemeral certificate
+        # against the sigstore community Fulcio instance.
+        run: cosign sign ${{ steps.base-meta.outputs.tags }}@${{ steps.base-image.outputs.digest }}
+
+      - name: Sign the published build image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ steps.build-meta.outputs.tags }}@${{ steps.build-image.outputs.digest }}
 #
 #      - name: Sign the published runtime image
 #        if: ${{ github.event_name != 'pull_request' }}

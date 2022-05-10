@@ -1,4 +1,4 @@
-FROM denismakogon/ffmpeg-debian:base as build
+FROM ghcr.io/denismakogon/ffmpeg-debian:base as build
 
 ARG PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
 ARG LD_LIBRARY_PATH=/opt/ffmpeg/lib

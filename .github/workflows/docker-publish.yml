@@ -113,16 +113,16 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
 
-#      - name: "ffmpeg-debian:<ffmpeg-version>-runtime image building stage"
-#        id: runtime-image
-#        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-#        with:
-#          context: ./runtime
-#          push: ${{ github.event_name != 'pull_request' }}
-#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-runtime
-#          build-args: |
-#            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
-#
+      - name: "ffmpeg-debian:<ffmpeg-version>-runtime image building stage"
+        id: runtime-image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./runtime
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }}
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+
 #      - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
 #        id: golang-image
 #        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
@@ -163,14 +163,14 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
-        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build@${{ steps.build-image.outputs.digest }}
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}@${{ steps.build-image.outputs.digest }}
 
-#      - name: Sign the published runtime image
-#        if: ${{ github.event_name != 'pull_request' }}
-#        env:
-#          COSIGN_EXPERIMENTAL: "true"
-#        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-runtime@${{ steps.runtime-image.outputs.digest }}
-#
+      - name: Sign the published runtime image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }}@${{ steps.runtime-image.outputs.digest }}
+
 #      - name: Sign the published golang image
 #        if: ${{ github.event_name != 'pull_request' }}
 #        env:

@@ -44,34 +44,34 @@ docker build -t test-ffmpeg --build-arg "FFMPEG_VERSION=5.0.1" --build-arg "GOLA
 
 base image:
 ```shell
-docker build -t denismakogon/ffmpeg-debian:base -f base/Dockerfile .
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:base -f base/Dockerfile .
 ```
 
 FFMPEG build stage image:
 ```shell
-docker build -t denismakogon/ffmpeg-debian:5.0.1-build -f ffmpeg/5.0.1/Dockerfile .
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-build -f ffmpeg/5.0.1/Dockerfile .
 ```
 
 runtime image:
 ```shell
-docker build -t denismakogon/ffmpeg-debian:5.0.1-runtime -f runtime/Dockerfile --build-arg "FFMPEG_VERSION=5.0.1" .
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-runtime -f runtime/Dockerfile --build-arg "FFMPEG_VERSION=5.0.1" .
 ```
 
 Golang image:
 ```shell
-docker build -t denismakogon/ffmpeg-debian:5.0.1-golang-1 -f golang/Dockerfile --build-arg "FFMPEG_VERSION=5.0.1" --build-arg "GOLANG_VERSION=1" .
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-golang-1 -f golang/Dockerfile --build-arg "FFMPEG_VERSION=5.0.1" --build-arg "GOLANG_VERSION=1" .
 ```
 Please note, golang version must in ffmpeg image must match to `GOLANG_VERSION` build arg.
 
 OpenJDK image:
 ```shell
-docker build -t denismakogon/ffmpeg-debian:5.0.1-openjdk-ga -f openjdk/Dockerfile \
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-openjdk-18 -f openjdk/Dockerfile \
   --build-arg "FFMPEG_VERSION=5.0.1" \
   --build-arg "JDK_PKG_URL=https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz" .
 ```
 
 ```shell
-docker build -t denismakogon/ffmpeg-debian:5.0.1-openjdk-19-panama -f openjdk/Dockerfile \
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-openjdk-19-panama -f openjdk/Dockerfile \
   --build-arg "FFMPEG_VERSION=5.0.1" \
   --build-arg "JDK_PKG_URL=https://download.java.net/java/early_access/panama/1/openjdk-19-panama+1-13_linux-x64_bin.tar.gz" .
 ```

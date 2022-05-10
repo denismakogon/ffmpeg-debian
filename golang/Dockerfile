@@ -1,7 +1,7 @@
 ARG FFMPEG_VERSION=5.0.1
 ARG GOLANG_VERSION=1
 
-FROM denismakogon/ffmpeg-debian:${FFMPEG_VERSION}-build as build-stage
+FROM ghcr.io/denismakogon/ffmpeg-debian:${FFMPEG_VERSION}-build as build-stage
 
 FROM golang:${GOLANG_VERSION}-bullseye
 

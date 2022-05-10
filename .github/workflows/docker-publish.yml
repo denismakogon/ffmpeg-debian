@@ -78,7 +78,7 @@ jobs:
         id: build-meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
       - name: runtime image metadata
         id: runtime-meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
@@ -111,7 +111,7 @@ jobs:
         with:
           context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
 
 #      - name: "ffmpeg-debian:<ffmpeg-version>-runtime image building stage"
 #        id: runtime-image

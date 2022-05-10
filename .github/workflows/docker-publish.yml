@@ -73,7 +73,7 @@ jobs:
         id: base-meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
       - name: build image metadata
         id: build-meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
@@ -105,14 +105,14 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
 
-#      - name: "ffmpeg-debian:<ffmpeg-version>-build image building stage"
-#        id: build-image
-#        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-#        with:
-#          context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
-#          push: ${{ github.event_name != 'pull_request' }}
-#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build
-#
+      - name: "ffmpeg-debian:<ffmpeg-version>-build image building stage"
+        id: build-image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build
+
 #      - name: "ffmpeg-debian:<ffmpeg-version>-runtime image building stage"
 #        id: runtime-image
 #        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
@@ -159,12 +159,12 @@ jobs:
         # against the sigstore community Fulcio instance.
         run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}@${{ steps.base-image.outputs.digest }}
 
-#      - name: Sign the published build image
-#        if: ${{ github.event_name != 'pull_request' }}
-#        env:
-#          COSIGN_EXPERIMENTAL: "true"
-#        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build@${{ steps.build-image.outputs.digest }}
-#
+      - name: Sign the published build image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-build@${{ steps.build-image.outputs.digest }}
+
 #      - name: Sign the published runtime image
 #        if: ${{ github.event_name != 'pull_request' }}
 #        env:

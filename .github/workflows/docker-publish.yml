@@ -130,28 +130,28 @@ jobs:
           build-args: |
             FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
 
-#      - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
-#        id: golang-image
-#        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-#        with:
-#          context: ./golang
-#          push: ${{ github.event_name != 'pull_request' }}
-#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
-#          build-args: |
-#            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
-#            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-#
-#      - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version> image building stage"
-#        id: openjdk-image
-#        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-#        with:
-#          context: ./openjdk
-#          push: ${{ github.event_name != 'pull_request' }}
-#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
-#          build-args: |
-#            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
-#            JDK_PKG_URL=${{ env.JDK_PKG_URL }}
-#            JDK_VERSION=${{ env.JDK_VERSION }}
+      - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
+        id: golang-image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./golang
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+
+      - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version> image building stage"
+        id: openjdk-image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./openjdk
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            JDK_PKG_URL=${{ env.JDK_PKG_URL }}
+            JDK_VERSION=${{ env.JDK_VERSION }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
@@ -178,14 +178,14 @@ jobs:
           COSIGN_EXPERIMENTAL: "true"
         run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }}@${{ steps.runtime-image.outputs.digest }}
 
-#      - name: Sign the published golang image
-#        if: ${{ github.event_name != 'pull_request' }}
-#        env:
-#          COSIGN_EXPERIMENTAL: "true"
-#        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}@${{ steps.golang-image.outputs.digest }}
-#
-#      - name: Sign the published openjdk image
-#        if: ${{ github.event_name != 'pull_request' }}
-#        env:
-#          COSIGN_EXPERIMENTAL: "true"
-#        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}@${{ steps.openjdk-image.outputs.digest }}
+      - name: Sign the published golang image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}@${{ steps.golang-image.outputs.digest }}
+
+      - name: Sign the published openjdk image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}@${{ steps.openjdk-image.outputs.digest }}

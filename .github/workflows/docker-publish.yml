@@ -83,7 +83,7 @@ jobs:
         id: runtime-meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-runtime
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }}
       - name: golang image metadata
         id: golang-meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
@@ -95,9 +95,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
 
+      - name: inspect changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v19
+
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: "ffmpeg-debian:base image building stage"
+        if: contains(steps.changed-files.outputs.modified_files, 'base/Dockerfile')
         id: base-image
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
@@ -107,6 +112,7 @@ jobs:
 
       - name: "ffmpeg-debian:<ffmpeg-version>-build image building stage"
         id: build-image
+        if: contains(steps.changed-files.outputs.modified_files, 'ffmpeg/5.0.1/Dockerfile')
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
@@ -115,6 +121,7 @@ jobs:
 
       - name: "ffmpeg-debian:<ffmpeg-version>-runtime image building stage"
         id: runtime-image
+        if: contains(steps.changed-files.outputs.modified_files, 'runtime/Dockerfile')
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: ./runtime
@@ -123,28 +130,28 @@ jobs:
           build-args: |
             FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
 
-#      - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
-#        id: golang-image
-#        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-#        with:
-#          context: ./golang
-#          push: ${{ github.event_name != 'pull_request' }}
-#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
-#          build-args: |
-#            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
-#            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-#
-#      - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version> image building stage"
-#        id: openjdk-image
-#        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-#        with:
-#          context: ./openjdk
-#          push: ${{ github.event_name != 'pull_request' }}
-#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
-#          build-args: |
-#            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
-#            JDK_PKG_URL=${{ env.JDK_PKG_URL }}
-#            JDK_VERSION=${{ env.JDK_VERSION }}
+      - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
+        id: golang-image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./golang
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+
+      - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version> image building stage"
+        id: openjdk-image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./openjdk
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            JDK_PKG_URL=${{ env.JDK_PKG_URL }}
+            JDK_VERSION=${{ env.JDK_VERSION }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
@@ -171,14 +178,14 @@ jobs:
           COSIGN_EXPERIMENTAL: "true"
         run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }}@${{ steps.runtime-image.outputs.digest }}
 
-#      - name: Sign the published golang image
-#        if: ${{ github.event_name != 'pull_request' }}
-#        env:
-#          COSIGN_EXPERIMENTAL: "true"
-#        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}@${{ steps.golang-image.outputs.digest }}
-#
-#      - name: Sign the published openjdk image
-#        if: ${{ github.event_name != 'pull_request' }}
-#        env:
-#          COSIGN_EXPERIMENTAL: "true"
-#        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}@${{ steps.openjdk-image.outputs.digest }}
+      - name: Sign the published golang image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}@${{ steps.golang-image.outputs.digest }}
+
+      - name: Sign the published openjdk image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}@${{ steps.openjdk-image.outputs.digest }}

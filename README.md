@@ -5,9 +5,10 @@
 In this repo you'll find the following images:
 
  - base (something that you don't need but used across all other images)
- - build-stage (ffmpeg compiled from source with all plugins available, you don't need that as well)
- - golang (golang + ffmpeg build environment)
- - runtime (ffmpeg runtime for golang compiled application)
+ - <ffmpeg-version>-build (ffmpeg compiled from source with all plugins available, you don't need that as well)
+ - <ffmpeg-version>-golang-<golang-version> (golang + ffmpeg build environment)
+ - <ffmpeg-version>-runtime (ffmpeg runtime for golang compiled application)
+ - <ffmpeg-version>-openjdk-<jdk-version> (ffmpeg runtime for openjdk compiled application)
  - test (test image with one of the Go Media Framework applications complied and executed as the verification that all images work fine)
 
 ## How to build a GMF application?
@@ -15,7 +16,7 @@ In this repo you'll find the following images:
 Check the following GMF application:
 
 ```dockerfile
-FROM denismakogon/ffmpeg-debian:golang as build-stage
+FROM ghcr.io/denismakogon/ffmpeg-debian:5.0.1-golang-1 as build-stage
 RUN go get github.com/3d0c/gmf
 WORKDIR $GOPATH/src/github.com/3d0c/gmf/examples
 RUN mkdir -p /examples/tmp && \
@@ -23,7 +24,7 @@ RUN mkdir -p /examples/tmp && \
 RUN go build -o /examples/video-to-frames video-to-jpeg-avio.go
 
 
-FROM denismakogon/ffmpeg-debian:runtime
+FROM ghcr.io/denismakogon/ffmpeg-debian:5.0.1-runtime
 COPY --from=build-stage /examples /examples
 WORKDIR /examples
 ENTRYPOINT ["./video-to-frames"]

@@ -1,0 +1,21 @@
+name: on_merge
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  REGISTRY: ghcr.io
+  FFMPEG_VERSION: "5.0.1"
+  BASE_IMAGE: "base"
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: we-are-ok
+        run: echo "OK"

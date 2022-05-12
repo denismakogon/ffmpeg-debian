@@ -72,7 +72,7 @@ docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-openjdk-18 -f openjdk/D
 ```
 
 ```shell
-docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-openjdk-19-panama -f openjdk/Dockerfile \
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-openjdk-19-ea-panama -f openjdk/Dockerfile \
   --build-arg "FFMPEG_VERSION=5.0.1" \
   --build-arg "JDK_PKG_URL=https://download.java.net/java/early_access/panama/1/openjdk-19-panama+1-13_linux-x64_bin.tar.gz" .
 ```

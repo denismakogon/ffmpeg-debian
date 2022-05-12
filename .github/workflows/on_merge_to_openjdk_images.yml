@@ -1,0 +1,114 @@
+name: on_merge
+
+on:
+  schedule:
+    # At 00:00 on Sunday
+    - cron: '0 0 * * SUN'
+  push:
+    branches: [ master ]
+    tags: [ 'v*.*.*' ]
+    paths:
+      - 'openjdk/Dockerfile'
+
+env:
+  REGISTRY: ghcr.io
+  FFMPEG_VERSION: "5.0.1"
+  JDK_PKG_URL: "https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz"
+  JDK_EA_PANAMA_PKG_URL: "https://download.java.net/java/early_access/panama/1/openjdk-19-panama+1-13_linux-x64_bin.tar.gz"
+  JDK_VERSION: "18"
+  JDK_EA_VERSION: "19"
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+
+  build:
+    environment: ghcr.io
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Install the cosign tool except on PR
+      # https://github.com/sigstore/cosign-installer
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@d6a3abf1bdea83574e28d40543793018b6035605
+        with:
+          cosign-release: 'v1.7.1'
+
+      # Workaround: https://github.com/docker/build-push-action/issues/461
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+        with:
+          driver-opts: network=host
+
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCRIO_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: openjdk ga image metadata
+        id: openjdk-ga-meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
+      - name: openjdk ea panama image metadata
+        id: openjdk-ea-meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_EA_VERSION }}-ea-panama
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version> image building stage"
+        id: openjdk-ga-image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./openjdk
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            JDK_PKG_URL=${{ env.JDK_PKG_URL }}
+
+      - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version>-ea-panama image building stage"
+        id: openjdk-ea-panama-image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./openjdk
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_EA_VERSION }}-ea-panama
+          build-args: |
+            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            JDK_PKG_URL=${{ env.JDK_EA_PANAMA_PKG_URL }}
+
+      # Sign the resulting Docker image digest except on PRs.
+      # This will only write to the public Rekor transparency log when the Docker
+      # repository is public to avoid leaking data.  If you would like to publish
+      # transparency data even for private images, pass --force to cosign below.
+      # https://github.com/sigstore/cosign
+      - name: Sign the published openjdk ga image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}@${{ steps.openjdk-ga-image.outputs.digest }}
+
+      - name: Sign the published openjdk ea panama image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_EA_VERSION }}-ea-panama@${{ steps.openjdk-ea-panama-image.outputs.digest }}

@@ -12,7 +12,7 @@ env:
 
 jobs:
 
-  build:
+  simple:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

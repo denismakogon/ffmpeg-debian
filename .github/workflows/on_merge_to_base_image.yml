@@ -1,4 +1,4 @@
-name: on_merge
+name: on_merge_to_base_image
 
 on:
   schedule:
@@ -18,7 +18,7 @@ env:
 
 jobs:
 
-  build:
+  merge_to_base:
     environment: ghcr.io
     runs-on: ubuntu-latest
     permissions:

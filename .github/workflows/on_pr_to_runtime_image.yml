@@ -15,7 +15,7 @@ env:
 
 jobs:
 
-  build:
+  pr_to_runtime:
     environment: ghcr.io
     runs-on: ubuntu-latest
     permissions:

@@ -43,7 +43,7 @@ jobs:
         id: inspect-image
         run: >-
           echo "::set-output name=digest::$(
-            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }} | jq -r '.[] | .Id'
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }} | jq -r '.[] | .RepoDigests[]'
           )"
 
       - name: "ffmpeg-debian:<ffmpeg-version>-build image building stage"
@@ -54,4 +54,4 @@ jobs:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
           build-args: |
-            BASE_IMAGE_DIGEST_TAG=ffmpeg-debian@${{ steps.inspect-image.outputs.digest }}
+            BASE_IMAGE_DIGEST_TAG=${{ steps.inspect-image.outputs.digest }}

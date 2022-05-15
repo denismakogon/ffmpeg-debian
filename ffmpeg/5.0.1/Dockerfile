@@ -1,4 +1,4 @@
-ARG BASE_IMAGE_DIGEST_TAG=":base"
+ARG BASE_IMAGE_DIGEST_TAG="ffmpeg-debian:base"
 
 FROM ghcr.io/denismakogon/ffmpeg-debian${BASE_IMAGE_DIGEST_TAG} as build
 

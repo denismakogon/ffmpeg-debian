@@ -43,4 +43,4 @@ jobs:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
           build-args: |
-            BASE_IMAGE_DIGEST_TAG=":base"
+            BASE_IMAGE_DIGEST_TAG='ffmpeg-debian:base'

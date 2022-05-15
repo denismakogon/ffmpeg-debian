@@ -1,9 +1,6 @@
 name: on_merge_to_build_image
 
 on:
-  schedule:
-    # At 00:00 on Sunday
-    - cron: '0 0 * * SUN'
   push:
     branches: [ master ]
     tags: [ 'v*.*.*' ]
@@ -74,6 +71,8 @@ jobs:
           context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
+          build-args: |
+            BASE_IMAGE_DIGEST_TAG=":base"
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker

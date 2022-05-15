@@ -1,9 +1,6 @@
 name: on_merge_to_golang_image
 
 on:
-  schedule:
-    # At 00:00 on Sunday
-    - cron: '0 0 * * SUN'
   push:
     branches: [ master ]
     tags: [ 'v*.*.*' ]

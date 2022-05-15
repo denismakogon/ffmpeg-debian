@@ -36,11 +36,14 @@ jobs:
         with:
           driver-opts: network=host
 
+      - name: Pull base image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
+
       - name: Inspect base image
         id: inspect-image
         run: >-
           echo "::set-output name=digest::$(
-            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }} | jq -r '.[] | .Id'
           )"
 
       - name: "ffmpeg-debian:<ffmpeg-version>-build image building stage"
@@ -51,4 +54,4 @@ jobs:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
           build-args: |
-            BASE_IMAGE_DIGEST_TAG=${{ env.IMAGE_NAME }}@${{ steps.inspect-image.outputs.image_digest }}
+            BASE_IMAGE_DIGEST_TAG=ffmpeg-debian@${{ steps.inspect-image.outputs.digest }}

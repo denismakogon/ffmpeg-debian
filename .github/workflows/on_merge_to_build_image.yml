@@ -11,6 +11,7 @@ env:
   REGISTRY: ghcr.io
   FFMPEG_VERSION: "5.0.1"
   BUILD_IMAGE: "build"
+  BASE_IMAGE: "base"
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -72,7 +73,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
           build-args: |
-            BASE_IMAGE_DIGEST_TAG=ffmpeg-debian:base
+            BASE_IMAGE_DIGEST_TAG=${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker

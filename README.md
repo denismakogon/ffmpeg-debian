@@ -57,7 +57,7 @@ optional build arg is `BASE_IMAGE_DIGEST_TAG`, it used to point to a specific ve
 
 ```shell
 docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-build -f ffmpeg/5.0.1/Dockerfile \
-  --build-arg "BASE_IMAGE_DIGEST_TAG="ghcr.io/denismakogon/ffmpeg-debian@sha256:f6781e831ef68a7ff7170374639be85098b49c6a7740a3652d2f8f1ba43afc1e" \
+  --build-arg "BASE_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian@sha256:f6781e831ef68a7ff7170374639be85098b49c6a7740a3652d2f8f1ba43afc1e" \
   .
 ```
 
@@ -65,7 +65,10 @@ see the [following documentation](https://github.com/denismakogon/ffmpeg-debian/
 
 runtime image:
 ```shell
-docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-runtime -f runtime/Dockerfile --build-arg "FFMPEG_VERSION=5.0.1" .
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-runtime -f runtime/Dockerfile \
+  --build-arg "BASE_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian:base" \
+  --build-arg "BUILD_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian:5.0.1-build" \
+  .
 ```
 
 Golang image:

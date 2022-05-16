@@ -1,4 +1,6 @@
-FROM ghcr.io/denismakogon/ffmpeg-debian:base as build
+ARG BASE_IMAGE_DIGEST_TAG="ghcr.io/denismakogon/ffmpeg-debian:base"
+
+FROM ${BASE_IMAGE_DIGEST_TAG} as build
 
 ARG PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
 ARG LD_LIBRARY_PATH=/opt/ffmpeg/lib

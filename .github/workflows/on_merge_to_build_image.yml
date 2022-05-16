@@ -1,9 +1,6 @@
 name: on_merge_to_build_image
 
 on:
-  schedule:
-    # At 00:00 on Sunday
-    - cron: '0 0 * * SUN'
   push:
     branches: [ master ]
     tags: [ 'v*.*.*' ]
@@ -14,6 +11,7 @@ env:
   REGISTRY: ghcr.io
   FFMPEG_VERSION: "5.0.1"
   BUILD_IMAGE: "build"
+  BASE_IMAGE: "base"
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -56,6 +54,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCRIO_TOKEN }}
 
+      - name: Pull base image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
+
+      - name: Inspect base image
+        id: inspect-image
+        run: >-
+          echo "::set-output name=digest::$(
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+          )"
+
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
       - name: build image metadata
@@ -74,6 +82,8 @@ jobs:
           context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
+          build-args: |
+            BASE_IMAGE_DIGEST_TAG=${{ steps.inspect-image.outputs.digest }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker

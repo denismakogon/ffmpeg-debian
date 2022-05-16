@@ -10,6 +10,7 @@ env:
   REGISTRY: ghcr.io
   FFMPEG_VERSION: "5.0.1"
   BUILD_IMAGE: "build"
+  BASE_IMAGE: "base"
   IMAGE_NAME: ${{ github.repository }}
 
 
@@ -35,6 +36,16 @@ jobs:
         with:
           driver-opts: network=host
 
+      - name: Pull base image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
+
+      - name: Inspect base image
+        id: inspect-image
+        run: >-
+          echo "::set-output name=digest::$(
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+          )"
+
       - name: "ffmpeg-debian:<ffmpeg-version>-build image building stage"
         id: build-image
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
@@ -42,3 +53,5 @@ jobs:
           context: ./ffmpeg/${{ env.FFMPEG_VERSION }}
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
+          build-args: |
+            BASE_IMAGE_DIGEST_TAG=${{ steps.inspect-image.outputs.digest }}

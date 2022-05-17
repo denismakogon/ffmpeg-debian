@@ -11,6 +11,8 @@ env:
   REGISTRY: ghcr.io
   FFMPEG_VERSION: "5.0.1"
   RUNTIME_IMAGE: "runtime"
+  BASE_IMAGE: "base"
+  BUILD_IMAGE: "build"
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:

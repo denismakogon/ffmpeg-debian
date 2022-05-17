@@ -66,22 +66,27 @@ see the [following documentation](https://github.com/denismakogon/ffmpeg-debian/
 runtime image:
 ```shell
 docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-runtime -f runtime/Dockerfile \
-  --build-arg "BASE_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian:base" \
-  --build-arg "BUILD_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian:5.0.1-build" \
-  .
+    --build-arg "BASE_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian@sha256:f6781e831ef68a7ff7170374639be85098b49c6a7740a3652d2f8f1ba43afc1e" \
+    --build-arg "BUILD_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian@sha256:2b421ef4be773ce80d3f82717d9fd845e6cc03dfad4c961b2886b7a59117a609" \
+      .
 ```
 
 Golang image:
 ```shell
-docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-golang-1 -f golang/Dockerfile --build-arg "FFMPEG_VERSION=5.0.1" --build-arg "GOLANG_VERSION=1" .
+docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-golang-1 -f golang/Dockerfile \
+  --build-arg "BUILD_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian@sha256:2b421ef4be773ce80d3f82717d9fd845e6cc03dfad4c961b2886b7a59117a609" \
+  --build-arg "GOLANG_VERSION=1" \
+  .
 ```
 Please note, golang version must in ffmpeg image must match to `GOLANG_VERSION` build arg.
 
 OpenJDK image:
 ```shell
 docker build -t ghcr.io/denismakogon/ffmpeg-debian:5.0.1-openjdk-18 -f openjdk/Dockerfile \
-  --build-arg "FFMPEG_VERSION=5.0.1" \
-  --build-arg "JDK_PKG_URL=https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz" .
+  --build-arg "BASE_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian@sha256:f6781e831ef68a7ff7170374639be85098b49c6a7740a3652d2f8f1ba43afc1e" \
+  --build-arg "BUILD_IMAGE_DIGEST_TAG=ghcr.io/denismakogon/ffmpeg-debian@sha256:2b421ef4be773ce80d3f82717d9fd845e6cc03dfad4c961b2886b7a59117a609" \
+  --build-arg "JDK_PKG_URL=https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz" \
+  .
 ```
 
 ```shell

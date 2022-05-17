@@ -10,6 +10,7 @@ env:
   REGISTRY: ghcr.io
   FFMPEG_VERSION: "5.0.1"
   GOLANG_VERSION: "1"
+  BUILD_IMAGE: "build"
   IMAGE_NAME: ${{ github.repository }}
 
 
@@ -35,6 +36,16 @@ jobs:
         with:
           driver-opts: network=host
 
+      - name: Pull build image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
+
+      - name: Inspect build image
+        id: build-image
+        run: >-
+          echo "::set-output name=digest::$(
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+          )"
+
       - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
         id: golang-image
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
@@ -43,5 +54,5 @@ jobs:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
           build-args: |
-            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            BUILD_IMAGE_DIGEST_TAG=${{ steps.build-image.outputs.digest }}
             GOLANG_VERSION=${{ env.GOLANG_VERSION }}

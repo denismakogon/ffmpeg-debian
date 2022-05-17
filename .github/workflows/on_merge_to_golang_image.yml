@@ -14,6 +14,7 @@ env:
   REGISTRY: ghcr.io
   FFMPEG_VERSION: "5.0.1"
   GOLANG_VERSION: "1"
+  BUILD_IMAGE: "build"
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -64,6 +65,17 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
 
+
+      - name: Pull build image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
+
+      - name: Inspect build image
+        id: build-image
+        run: >-
+          echo "::set-output name=digest::$(
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+          )"
+
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: "ffmpeg-debian:<ffmpeg-version>-golang-<go-version> image building stage"
@@ -74,7 +86,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-golang-${{ env.GOLANG_VERSION }}
           build-args: |
-            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            BUILD_IMAGE_DIGEST_TAG=${{ steps.build-image.outputs.digest }}
             GOLANG_VERSION=${{ env.GOLANG_VERSION }}
 
       # Sign the resulting Docker image digest except on PRs.

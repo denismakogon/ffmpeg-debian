@@ -9,6 +9,9 @@ on:
 env:
   REGISTRY: ghcr.io
   FFMPEG_VERSION: "5.0.1"
+  RUNTIME_IMAGE: "runtime"
+  BASE_IMAGE: "base"
+  BUILD_IMAGE: "build"
   JDK_PKG_URL: "https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz"
   JDK_EA_PANAMA_PKG_URL: "https://download.java.net/java/early_access/panama/1/openjdk-19-panama+1-13_linux-x64_bin.tar.gz"
   JDK_VERSION: "18"
@@ -38,6 +41,26 @@ jobs:
         with:
           driver-opts: network=host
 
+      - name: Pull build image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
+
+      - name: Inspect build image
+        id: build-image
+        run: >-
+          echo "::set-output name=digest::$(
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+          )"
+
+      - name: Pull runtime image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }}
+
+      - name: Inspect runtime image
+        id: runtime-image
+        run: >-
+          echo "::set-output name=digest::$(
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+          )"
+
       - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version> image building stage"
         id: openjdk-ga-image
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
@@ -46,9 +69,9 @@ jobs:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_VERSION }}
           build-args: |
-            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            BUILD_IMAGE_DIGEST_TAG=${{ steps.build-image.outputs.digest }}
+            RUNTIME_IMAGE_DIGEST_TAG=${{ steps.runtime-image.outputs.digest }}
             JDK_PKG_URL=${{ env.JDK_PKG_URL }}
-            JDK_VERSION=${{ env.JDK_VERSION }}
 
       - name: "ffmpeg-debian:<ffmpeg-version>-openjdk-<jdk-version>-ea-panama image building stage"
         id: openjdk-ea-panama-image
@@ -58,6 +81,6 @@ jobs:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-openjdk-${{ env.JDK_EA_VERSION }}-ea-panama
           build-args: |
-            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            BUILD_IMAGE_DIGEST_TAG=${{ steps.build-image.outputs.digest }}
+            RUNTIME_IMAGE_DIGEST_TAG=${{ steps.runtime-image.outputs.digest }}
             JDK_PKG_URL=${{ env.JDK_EA_PANAMA_PKG_URL }}
-            JDK_VERSION=${{ env.JDK_EA_VERSION }}

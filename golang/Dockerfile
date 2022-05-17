@@ -1,9 +1,9 @@
-ARG FFMPEG_VERSION=5.0.1
+ARG BUILD_IMAGE_DIGEST_TAG="ghcr.io/denismakogon/ffmpeg-debian:5.0.1-build"
 ARG GOLANG_VERSION=1
 
-FROM ghcr.io/denismakogon/ffmpeg-debian:${FFMPEG_VERSION}-build as build-stage
+FROM ${BUILD_IMAGE_DIGEST_TAG} as build-stage
 
-FROM golang:${GOLANG_VERSION}-bullseye
+FROM docker.io/library/golang:${GOLANG_VERSION}-bullseye
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libva-drm2 \

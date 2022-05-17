@@ -1,8 +1,9 @@
-ARG FFMPEG_VERSION=5.0.1
+ARG BUILD_IMAGE_DIGEST_TAG="ghcr.io/denismakogon/ffmpeg-debian:5.0.1-build"
+ARG RUNTIME_IMAGE_DIGEST_TAG="ghcr.io/denismakogon/ffmpeg-debian:5.0.1-runtime"
 
-FROM ghcr.io/denismakogon/ffmpeg-debian:${FFMPEG_VERSION}-build as build-stage
+FROM ${BUILD_IMAGE_DIGEST_TAG} as build-stage
 
-FROM ghcr.io/denismakogon/ffmpeg-debian:${FFMPEG_VERSION}-runtime
+FROM ${RUNTIME_IMAGE_DIGEST_TAG}
 
 ARG JDK_PKG_URL
 

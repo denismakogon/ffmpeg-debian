@@ -1,8 +1,9 @@
-ARG FFMPEG_VERSION=5.0.1
+ARG BUILD_IMAGE_DIGEST_TAG="ghcr.io/denismakogon/ffmpeg-debian:5.0.1-build"
+ARG BASE_IMAGE_DIGEST_TAG="ghcr.io/denismakogon/ffmpeg-debian:base"
 
-FROM ghcr.io/denismakogon/ffmpeg-debian:${FFMPEG_VERSION}-build as build-stage
+FROM ${BUILD_IMAGE_DIGEST_TAG} as build-stage
 
-FROM denismakogon/ffmpeg-debian:base
+FROM ${BASE_IMAGE_DIGEST_TAG}
 
 COPY --from=build-stage /usr/local /usr/local/
 COPY --from=build-stage /opt/ffmpeg/lib/pkgconfig /usr/local/lib/pkgconfig

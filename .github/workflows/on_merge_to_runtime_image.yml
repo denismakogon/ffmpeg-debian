@@ -61,6 +61,27 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }}
 
+
+      - name: Pull base image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }}
+
+      - name: Inspect base image
+        id: base-image
+        run: >-
+          echo "::set-output name=digest::$(
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+          )"
+
+      - name: Pull build image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }}
+
+      - name: Inspect build image
+        id: build-image
+        run: >-
+          echo "::set-output name=digest::$(
+            docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.BUILD_IMAGE }} | jq -r '.[] | .RepoDigests[]'
+          )"
+
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: "ffmpeg-debian:<ffmpeg-version>-runtime image building stage"
@@ -71,7 +92,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FFMPEG_VERSION }}-${{ env.RUNTIME_IMAGE }}
           build-args: |
-            FFMPEG_VERSION=${{ env.FFMPEG_VERSION }}
+            BASE_IMAGE_DIGEST_TAG=${{ steps.base-image.outputs.digest }}
+            BUILD_IMAGE_DIGEST_TAG=${{ steps.build-image.outputs.digest }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker

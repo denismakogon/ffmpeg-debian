@@ -15,7 +15,8 @@ RUN set -eux; \
       curl --output /tmp/jdk.tgz "$JDK_PKG_URL" && \
       echo "$JDK_PKG_SHA256 */tmp/jdk.tgz" | sha256sum -c; \
       mkdir -p "$JAVA_HOME"; \
-      tar --extract --file /tmp/jdk.tgz --directory "$JAVA_HOME" --strip-components 1
+      tar --extract --file /tmp/jdk.tgz --directory "$JAVA_HOME" --strip-components 1 && \
+      rm -fr /tmp/jdk.tgz
 
 COPY --from=build-stage /usr/local /usr/local/
 COPY --from=build-stage /opt/ffmpeg/lib/pkgconfig /usr/local/lib/pkgconfig
